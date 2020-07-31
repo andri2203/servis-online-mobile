@@ -1,0 +1,48 @@
+{
+  "project_info": {
+    "project_number": "839197343266",
+    "firebase_url": "https://servicemotor20.firebaseio.com",
+    "project_id": "servicemotor20",
+    "storage_bucket": "servicemotor20.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:839197343266:android:9b2fc55f0df6e0efff147b",
+        "android_client_info": {
+          "package_name": "com.example.servis_motor"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "839197343266-sp9gusetpgrml117kbjg4rsdd5qfo3vq.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.servis_motor",
+            "certificate_hash": "92429d997efa08f8eac5d3d2a37a8ff4b9ffe091"
+          }
+        },
+        {
+          "client_id": "839197343266-1dqrepn9386ij7lh0cq5st0fser5hq7d.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDUECCyaDzt_SzN9_x4h4cDKXV_aTZUecg"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "839197343266-1dqrepn9386ij7lh0cq5st0fser5hq7d.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
