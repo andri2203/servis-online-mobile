@@ -21,9 +21,23 @@ class _UserWidgetState extends State<UserWidget> {
         children: <Widget>[
           ClipRRect(
             borderRadius: BorderRadius.circular(70),
-            child: Image(
-              image: NetworkImage(user['photoURL']),
+            child: Image.network(
+              user['photoURL'],
+              fit: BoxFit.cover,
               width: 60,
+              height: 60,
+              loadingBuilder: (context, child, loadingProgress) {
+                if (loadingProgress != null && user['photoURL'] == null)
+                  return Center(
+                    child: CircularProgressIndicator(
+                      value: loadingProgress.expectedTotalBytes != null
+                          ? loadingProgress.cumulativeBytesLoaded /
+                              loadingProgress.expectedTotalBytes
+                          : null,
+                    ),
+                  );
+                return child;
+              },
             ),
           ),
           SizedBox(height: 5),
@@ -32,7 +46,7 @@ class _UserWidgetState extends State<UserWidget> {
                   fontSize: 15.725,
                   fontWeight: FontWeight.bold,
                   color: Colors.white)),
-          Text(user['data']['motor'] + ' ~ ' + user['data']['nomorPolisi'],
+          Text('${user['data']['nik']} ~ ${user['data']['nohp']}',
               style: TextStyle(fontSize: 12.725, color: Colors.white))
         ],
       ),

@@ -1,12 +1,15 @@
 import 'package:flutter/material.dart';
-import 'package:servis_motor/utils/auth.dart';
+import 'package:servis_motor/page/servis.dart';
 import 'package:servis_motor/widget/NavigationBar.dart';
 import 'package:servis_motor/widget/UserWidget.dart';
 
+import 'package:servis_motor/page/profile.dart';
+
 class HomeUI extends StatefulWidget {
   final Map<String, dynamic> profile;
+  final VoidCallback callback;
 
-  const HomeUI({Key key, this.profile}) : super(key: key);
+  const HomeUI({Key key, this.profile, this.callback}) : super(key: key);
 
   @override
   _HomeUIState createState() => _HomeUIState();
@@ -16,7 +19,42 @@ class _HomeUIState extends State<HomeUI> {
   @override
   void initState() {
     super.initState();
-    print(widget.profile);
+    this.handleDialog();
+  }
+
+  handleDialog() {
+    if (widget.profile['data'].isEmpty) {
+      WidgetsBinding.instance.addPostFrameCallback((_) async {
+        await showDialog(
+          useRootNavigator: true,
+          context: context,
+          builder: (ctx) {
+            return AlertDialog(
+              title: Text('Isi data dahulu'),
+              content: Text('Anda Belum memiliki identitas yang kami minta.'),
+              actions: <Widget>[
+                FlatButton(
+                  onPressed: () {
+                    Navigator.of(ctx).pop();
+                  },
+                  child: Text('Tidak'),
+                ),
+                FlatButton(
+                  onPressed: () {
+                    Navigator.of(ctx).pop();
+                    Navigator.of(context).push(MaterialPageRoute(
+                      builder: (context) =>
+                          ProfilePage(profile: widget.profile),
+                    ));
+                  },
+                  child: Text('Ya'),
+                ),
+              ],
+            );
+          },
+        );
+      });
+    }
   }
 
   @override
@@ -49,8 +87,7 @@ class _HomeUIState extends State<HomeUI> {
         ),
         body: Container(
           padding: new EdgeInsets.only(left: 20, right: 20),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          child: ListView(
             children: <Widget>[
               new UserWidget(profile: widget.profile),
               new SizedBox(height: 20),
@@ -70,9 +107,9 @@ class _HomeUIState extends State<HomeUI> {
                           icon: Icon(Icons.exit_to_app), title: Text("Keluar")),
                     ],
                     type: BottomNavigationBarType.fixed,
-                    onTap: navigationRouteHandler),
+                    onTap: (index) => navigationRouteHandler(index, context)),
               ),
-              new NavigationBar(),
+              new NavigationBar(profile: widget.profile),
               SizedBox(height: 15),
             ],
           ),
@@ -81,7 +118,7 @@ class _HomeUIState extends State<HomeUI> {
     );
   }
 
-  void navigationRouteHandler(int i) {
+  void navigationRouteHandler(int i, BuildContext context) {
     switch (i) {
       case 0:
         print("Route Index Home");
@@ -89,14 +126,37 @@ class _HomeUIState extends State<HomeUI> {
 
       case 1:
         print("Route Index Servis");
+        Navigator.of(context).push(MaterialPageRoute(
+          builder: (context) => ServisPage(profile: widget.profile),
+        ));
         break;
 
       case 2:
-        print("Route Index Profil");
+        Navigator.of(context).push(MaterialPageRoute(
+          builder: (context) => ProfilePage(profile: widget.profile),
+        ));
         break;
 
       case 3:
-        authService.signOut();
+        showDialog(
+          context: context,
+          builder: (context) {
+            return AlertDialog(
+              title: Text('Yakin ingin keluar?'),
+              actions: <Widget>[
+                FlatButton(
+                    onPressed: () => Navigator.of(context).pop(),
+                    child: Text('Tidak')),
+                FlatButton(
+                    onPressed: () {
+                      widget.callback();
+                      Navigator.of(context).pop();
+                    },
+                    child: Text('Ya'))
+              ],
+            );
+          },
+        );
         break;
     }
   }

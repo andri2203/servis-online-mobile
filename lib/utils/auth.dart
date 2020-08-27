@@ -48,14 +48,12 @@ class AuthService {
 
   void updateUserData(FirebaseUser user, Map<String, dynamic> data) async {
     DocumentReference ref = _db.collection("users").document(user.uid);
-    if (data.isEmpty) {
-      return ref.setData({
-        'uid': user.uid,
-        'email': user.email,
-        'photoURL': user.photoUrl,
-        'displayName': user.displayName,
+    bool exist = await ref.get().then((value) => value.exists);
+
+    if (exist == true) {
+      return ref.updateData({
         'lastSeen': DateTime.now(),
-      }, merge: true);
+      });
     } else {
       return ref.setData({
         'uid': user.uid,
