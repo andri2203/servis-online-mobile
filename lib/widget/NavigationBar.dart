@@ -29,8 +29,9 @@ class _NavigationBarState extends State<NavigationBar> {
           new Card(
             child: StreamBuilder<QuerySnapshot>(
               stream: _ref
-                  .where('success', isEqualTo: false)
+                  .where('success', isLessThan: 2)
                   .where('uid', isEqualTo: user['uid'])
+                  .orderBy('success', descending: true)
                   .orderBy('noAntrian', descending: true)
                   .limit(1)
                   .snapshots(),
@@ -54,7 +55,14 @@ class _NavigationBarState extends State<NavigationBar> {
                   String date = DateFormat('dd MMMM yyyy, HH:mm')
                       .format(data['daftar'].toDate());
 
+                  String status =
+                      data['success'] == 0 ? "Menunggu" : "Sedang Diservis";
+
                   return ListTile(
+                    leading: new Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [Text(status)],
+                    ),
                     title: Text('Anda Memiliki Pengajuan Servis'),
                     subtitle: Text('${data['motor']} - $date'),
                     trailing: Icon(Icons.warning, color: Colors.yellow),

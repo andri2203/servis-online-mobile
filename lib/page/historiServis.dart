@@ -39,7 +39,7 @@ class _HistoriServisState extends State<HistoriServis> {
         padding: EdgeInsets.all(10),
         child: StreamBuilder<QuerySnapshot>(
           stream: ref
-              .where('success', isEqualTo: true)
+              .where('success', isEqualTo: 2)
               .where('uid', isEqualTo: user['uid'])
               .orderBy('noAntrian', descending: true)
               .snapshots(),

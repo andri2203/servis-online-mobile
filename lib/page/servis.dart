@@ -19,6 +19,9 @@ class _ServisPageState extends State<ServisPage> {
   bool loading = false;
   String jenisSelect;
   String tglDaftar = DateTime.now().toString();
+  bool montirPicked = false;
+  Map<String, dynamic> montir = new Map<String, dynamic>();
+  List<Map<String, dynamic>> montirAva = new List<Map<String, dynamic>>();
 
   Firestore firestore = Firestore.instance;
 
@@ -148,32 +151,108 @@ class _ServisPageState extends State<ServisPage> {
       int _numAntrian = _antrian.documents.length + 1;
 
       QuerySnapshot _montir = await _refMontir.getDocuments();
-      int _randMontir = Random().nextInt(_montir.documents.length);
-      Map<String, dynamic> montir = _montir.documents[_randMontir].data;
-      print(montir.toString() + ' || ' + _randMontir.toString());
-      _refAntrian.document("${montir['kode']}-$_numAntrian")
-        ..setData({
-          'noAntrian': _numAntrian,
-          'montir': montir['nama'],
-          'kodeMontir': montir['kode'],
-          'uid': user['uid'],
-          'nama': user['displayName'],
-          'plat': platC.text,
-          'motor': motorC.text,
-          'servis': jenisSelect,
-          'daftar': DateTime.parse(tglDaftar),
-          'createAt': DateTime.now(),
-          'kerusakan': [],
-          'success': false,
-        }).whenComplete(() {
+
+      QuerySnapshot _check = await _refAntrian
+          .where('daftar',
+              isGreaterThanOrEqualTo: Timestamp.fromMillisecondsSinceEpoch(
+                  DateTime.parse(tglDaftar).millisecondsSinceEpoch),
+              isLessThan: Timestamp.fromMillisecondsSinceEpoch(
+                  DateTime.parse(tglDaftar).millisecondsSinceEpoch + 600000))
+          .getDocuments(source: Source.server);
+
+      _montir.documents.forEach((element) {
+        Map<String, dynamic> _data = element.data;
+        if (_check.documents.length > 0) {
+          for (var i = 0; i < _check.documents.length; i++) {
+            Map<String, dynamic> _montirOnJob = _check.documents[i].data;
+            if (_data['kode'] != _montirOnJob['kodeMontir']) {
+              setState(() {
+                montirAva.add(_data);
+              });
+            }
+          }
+        } else {
           setState(() {
-            platC.text = '';
-            motorC.text = '';
-            jenisSelect = null;
-            tglDaftar = '';
-            loading = false;
+            montirAva.add(_data);
           });
+        }
+      });
+
+      if (montirAva.length > 0) {
+        int _randMontir = Random().nextInt(montirAva.length);
+        setState(() {
+          montir = montirAva[_randMontir];
         });
+
+        _refAntrian.document("${montir['kode']}-$_numAntrian")
+          ..setData({
+            'noAntrian': _numAntrian,
+            'montir': montir['nama'],
+            'kodeMontir': montir['kode'],
+            'uid': user['uid'],
+            'nama': user['displayName'],
+            'plat': platC.text,
+            'motor': motorC.text,
+            'servis': jenisSelect,
+            'daftar': DateTime.parse(tglDaftar),
+            'createAt': DateTime.now(),
+            'kerusakan': [],
+            'success': 0,
+          }).whenComplete(() {
+            return showDialog(
+                context: context,
+                builder: (ctx) {
+                  return AlertDialog(
+                    title: Text('Pesanan Anda Berhasil'),
+                    content: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      mainAxisAlignment: MainAxisAlignment.start,
+                      children: [
+                        Text("Antrian : ${montir['kode']}-$_numAntrian"),
+                        Text("Montir : ${montir['nama']}"),
+                        Text("Tanggal : ${DateTime.parse(tglDaftar)}"),
+                      ],
+                    ),
+                    actions: <Widget>[
+                      FlatButton(
+                        onPressed: () {
+                          Navigator.of(ctx).pop();
+                          setState(() {
+                            platC.text = '';
+                            motorC.text = '';
+                            jenisSelect = null;
+                            tglDaftar = '';
+                            loading = false;
+                          });
+                        },
+                        child: Text('Tutup'),
+                      ),
+                    ],
+                  );
+                });
+          });
+      } else {
+        return showDialog(
+            context: context,
+            builder: (ctx) {
+              return AlertDialog(
+                title: Text('Maaf!!..'),
+                content: Text(
+                    'Semua Montir Sedang sibuk. Silahkan pesan di jam / tanggal berbeda'),
+                actions: <Widget>[
+                  FlatButton(
+                    onPressed: () {
+                      Navigator.of(ctx).pop();
+                      setState(() {
+                        loading = false;
+                      });
+                    },
+                    child: Text('Tutup'),
+                  ),
+                ],
+              );
+            });
+      }
     }
   }
 }

@@ -40,8 +40,9 @@ class _ListServisState extends State<ListServis> {
         padding: EdgeInsets.all(10),
         child: StreamBuilder<QuerySnapshot>(
           stream: ref
-              .where('success', isEqualTo: false)
+              .where('success', isLessThan: 2)
               .where('uid', isEqualTo: user['uid'])
+              .orderBy('success', descending: true)
               .orderBy('noAntrian', descending: true)
               .snapshots(),
           builder: (context, snapshot) {
@@ -77,10 +78,35 @@ class _ListServisState extends State<ListServis> {
                   Map<String, dynamic> data = ds.data;
                   String date = DateFormat('dd MMMM yyyy, HH:mm')
                       .format(data['daftar'].toDate());
+                  Map<String, dynamic> status = data['success'] == 0
+                      ? {
+                          'text': "Menunggu".toUpperCase(),
+                          "color": Colors.amber,
+                          "font-color": Colors.black
+                        }
+                      : {
+                          'text': "Sedang Diservis".toUpperCase(),
+                          "color": Colors.green,
+                          "font-color": Colors.white
+                        };
+
                   return Card(
                     child: Padding(
                       padding: EdgeInsets.all(8),
                       child: ListTile(
+                        leading: new Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Container(
+                              padding: new EdgeInsets.all(8),
+                              color: status['color'],
+                              child: Text(
+                                status['text'],
+                                style: TextStyle(color: status['font-color']),
+                              ),
+                            )
+                          ],
+                        ),
                         title: Text(
                           ds.documentID,
                           style: TextStyle(fontSize: 17),
